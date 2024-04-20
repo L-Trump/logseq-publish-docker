@@ -1,12 +1,16 @@
 ARG BB_VERSION=1.2.174
 ARG CLOJURE_VERSION=temurin-11-tools-deps-1.11.1.1182-alpine
-
-FROM babashka/babashka:${BB_VERSION}-alpine AS BB
-FROM clojure:${CLOJURE_VERSION}
-
 ARG NODE_URL=https://unofficial-builds.nodejs.org/download/release/v18.20.2/node-v18.20.2-linux-x64-musl.tar.gz
 ARG LOGSEQ_PUBSPA_VERSION=0.3.1
 ARG LOGSEQ_VERSION=0.10.6
+
+FROM babashka/babashka:${BB_VERSION}-alpine AS BB
+
+# The build stage
+FROM clojure:${CLOJURE_VERSION} as build
+ARG NODE_URL
+ARG LOGSEQ_PUBSPA_VERSION
+ARG LOGSEQ_VERSION
 
 WORKDIR /opt
 
@@ -49,6 +53,26 @@ RUN mkdir -p /opt/logseq-logseq && \
 # Fetching nbb deps
 RUN cd /opt/logseq-publish-spa && \
     yarn nbb-logseq -e ':fetching-deps'
+
+# The prod stage
+FROM clojure:${CLOJURE_VERSION}
+ARG NODE_URL
+
+WORKDIR /opt
+
+# install NodeJS & yarn
+RUN apk --no-cache --update --upgrade add curl ca-certificates tar gpg libstdc++
+RUN mkdir -p /opt/nodejs && \
+    wget ${NODE_URL} && \
+    tar -axvf *.tar.gz --directory /opt/nodejs --strip-components=1 && \
+    rm *.tar.gz && \
+    ln -s /opt/nodejs/bin/* /usr/local/bin/ && \
+    /usr/local/bin/npm install -g yarn --force && \
+    ln -s /opt/nodejs/bin/yarn /usr/local/bin/yarn
+
+# Copy from build stage
+COPY --from=build /opt/logseq-logseq/static /opt/logseq-static
+COPY --from=build /opt/logseq-publish-spa /opt/logseq-publish-spa
 
 # Default Environments
 ENV PUB_OUT_DIR=/out

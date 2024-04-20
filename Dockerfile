@@ -1,11 +1,14 @@
 ARG BB_VERSION=1.2.174
 ARG CLOJURE_VERSION=temurin-11-tools-deps-1.11.1.1208-bullseye-slim
-
-FROM babashka/babashka:${BB_VERSION} AS BB
-FROM clojure:${CLOJURE_VERSION}
-
 ARG LOGSEQ_PUBSPA_VERSION=0.3.1
 ARG LOGSEQ_VERSION=0.10.6
+
+FROM babashka/babashka:${BB_VERSION} AS BB
+
+# The build stage
+FROM clojure:${CLOJURE_VERSION} AS build
+ARG LOGSEQ_PUBSPA_VERSION
+ARG LOGSEQ_VERSION
 
 WORKDIR /opt
 
@@ -50,6 +53,31 @@ RUN mkdir -p /opt/logseq-logseq && \
 # Fetching nbb deps
 RUN cd /opt/logseq-publish-spa && \
     yarn nbb-logseq -e ':fetching-deps'
+
+# The prod stage
+FROM clojure:${CLOJURE_VERSION}
+ARG NODE_URL
+
+WORKDIR /opt
+
+# install NodeJS & yarn
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates apt-transport-https gpg && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /usr/local/bin
+
+# install NodeJS & yarn
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | \
+    tee /etc/apt/trusted.gpg.d/yarn.gpg && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | \
+    tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && apt-get install -y nodejs yarn wget && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy from build stage
+COPY --from=build /opt/logseq-logseq/static /opt/logseq-static
+COPY --from=build /opt/logseq-publish-spa /opt/logseq-publish-spa
 
 # Default Environments
 ENV PUB_OUT_DIR=/out

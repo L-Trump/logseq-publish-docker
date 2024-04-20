@@ -7,8 +7,8 @@ if [ ! -d "/opt/logseq-publish-spa" ]; then
 fi
 
 # Check if logseq-logseq directory exists
-if [ ! -d "/opt/logseq-logseq" ]; then
-	echo "Error: The directory 'logseq-logseq' does not exist"
+if [ ! -d "/opt/logseq-static" ]; then
+	echo "Error: The directory 'logseq-static' does not exist"
 	exit 1
 fi
 
@@ -28,5 +28,5 @@ if [ ! -d "$PUB_OUT_DIR" ]; then
 fi
 
 cd logseq-publish-spa
-node publish_spa.mjs $PUB_OUT_DIR --static-directory /opt/logseq-logseq/static \
+node publish_spa.mjs $PUB_OUT_DIR --static-directory /opt/logseq-static \
 	--directory $PUB_GRAPH_DIR --theme-mode $PUB_THEME --accent-color $PUB_ACCENT_COLOR

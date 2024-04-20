@@ -2,9 +2,11 @@ version: '3.7'
 
 services:
   logseq-publish-spa:
-    # image: logseq-publish-ci
-    build:
-      context: .
+    image: ghcr.io/l-trump/logseq-publish-spa:alpine
+    ## Build by yourself
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.alpine
     environment:
       PUB_THEME: light
       # PUB_ACCENT_COLOR: blue
