@@ -7,12 +7,14 @@ without configuring development environments.
 
 ## Usage
 
-**Note: The image consume \~7GB after the build (even with the alpine basis).**
+**Note: The image consume \~7GB disk space during the build (even with the alpine basis).
+The final image size is ~800 MB thanks to the multistage build. So it is recommended to 
+use the pre-built images first**
 
 ### With `docker build` manually
 
 ```sh
-$ git clone https://github.com/logseq/publish-spa
+$ git clone https://github.com/L-Trump/logseq-publish-docker
 $ cd publish-spa/docker
 $ docker build -t logseq-publish-spa -f Dockerfile .
 # Or use the Dockerfile.alpine
@@ -30,16 +32,12 @@ Several environment variables are provided:
 ### With docker compose
 
 ```sh
-$ git clone https://github.com/logseq/publish-spa
-$ cd publish-spa/docker
-```
-
-Then modify the `docker-compose.yml` file to match your preferred configuration.
-
-```sh
-# Run the container
+$ git clone https://github.com/L-Trump/logseq-publish-docker
+# Modify the docker-compose.yaml file. Then run the container
 $ docker compose up
 ```
+
+Remember to modify the `docker-compose.yml` file to match your preferred configuration.
 
 ### Change the version of Logseq
 
@@ -53,7 +51,7 @@ ARG LOGSEQ_VERSION=0.10.6
 
 ### Pre-built images
 
-Not available currently. Welcome for PRs.
+Pre-built images are available in ghcr.io. See https://ghcr.io/l-trump/logseq-publish-spa .
 
 ## LICENSE
 See LICENSE.md
