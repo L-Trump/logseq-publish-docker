@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+  logseq-publish-spa:
+    image: ghcr.io/l-trump/logseq-publish-spa:watch
+    # # Build by yourself
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.watch
+    environment:
+      MONITOR_INTERVAL: 60
+      PUB_THEME: light
+      # PUB_ACCENT_COLOR: blue
+    volumes:
+      - ./graph:/graph:ro
+      - ./out:/out

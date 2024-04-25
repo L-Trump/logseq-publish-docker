@@ -43,9 +43,11 @@ jobs:
           if [ "${{ github.event_name }}" == "push" ]; then
             echo "::set-output name=tags::${{ env.IMAGE_REPO_NAME }}:${{ github.ref_name }} ${{ env.IMAGE_REPO_NAME }}:latest"
             echo "::set-output name=alpine_tags::username/repository:${{ github.ref_name }}-alpine ${{ env.IMAGE_REPO_NAME }}:alpine"
+            echo "::set-output name=watch_tags::username/repository:${{ github.ref_name }}-watch ${{ env.IMAGE_REPO_NAME }}:watch"
           else
             echo "::set-output name=tags::${{ env.IMAGE_REPO_NAME }}:latest"
             echo "::set-output name=alpine_tags::${{ env.IMAGE_REPO_NAME }}:alpine"
+            echo "::set-output name=watch_tags::${{ env.IMAGE_REPO_NAME }}:watch"
           fi
 
       - name: Build and push debian-based image
@@ -68,7 +70,18 @@ jobs:
           file: Dockerfile.alpine
           tags: ${{ steps.set-tags.outputs.alpine_tags }}
 
+      - name: Build and push the watch image
+        id: docker-build-watch
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          file: Dockerfile.alpine
+          tags: ${{ steps.set-tags.outputs.watch_tags }}
+
       - name: Print image digests
         run: |
           echo "Main image digest: ${{ steps.docker-build-main.outputs.digest }}"  
           echo "Alpine image digest: ${{ steps.docker-build-alpine.outputs.digest }}"
+          echo "Watch image digest: ${{ steps.docker-build-watch.outputs.digest }}"
