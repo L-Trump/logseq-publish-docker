@@ -77,7 +77,7 @@ jobs:
           context: .
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
-          file: Dockerfile.alpine
+          file: Dockerfile.watch
           tags: ${{ steps.set-tags.outputs.watch_tags }}
 
       - name: Print image digests
